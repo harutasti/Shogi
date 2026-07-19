@@ -9,6 +9,36 @@ export const PIECE_CHARS: Record<number, string> = {
   9: 'と', 10: '杏', 11: '圭', 12: '全', 14: '馬', 15: '龍',
 }
 
+const PIECE_ASSET_NAMES: Record<number, string> = {
+  1: 'pawn',
+  2: 'lance',
+  3: 'knight',
+  4: 'silver',
+  5: 'gold',
+  6: 'bishop',
+  7: 'rook',
+  9: 'prom_pawn',
+  10: 'prom_lance',
+  11: 'prom_knight',
+  12: 'prom_silver',
+  14: 'horse',
+  15: 'dragon',
+}
+
+const SHOGI_ASSET_ROOT = `${import.meta.env.BASE_URL}assets/shogi`
+const BOARD_IMAGE = `${SHOGI_ASSET_ROOT}/board-light.png`
+
+/**
+ * Shogi Images の一文字駒。盤反転時も手前側の駒が正位置になる画像を選ぶ。
+ * 王将は後手、玉将は先手に割り当てて両者を区別する。
+ */
+function pieceImage(piece: number, flipped = false, inHand = false): string {
+  const abs = Math.abs(piece)
+  const name = abs === 8 ? (piece > 0 ? 'king2' : 'king') : PIECE_ASSET_NAMES[abs]
+  const side = inHand || !(piece < 0 !== flipped) ? 'black' : 'white'
+  return `${SHOGI_ASSET_ROOT}/${side}_${name}.png`
+}
+
 interface BoardProps {
   position: Position
   /** 直前の指し手の移動先 (ハイライト用)。なければ -1 */
@@ -16,7 +46,7 @@ interface BoardProps {
   selected: number // 選択中のマス。なければ -1
   targets: ReadonlySet<number>
   flipped: boolean
-  /** 解析による最善手 (移動元・先を青枠で表示)。from が -1 なら駒打ち */
+  /** 解析による最善手 (移動元・先を矢印で表示)。from が -1 なら駒打ち */
   bestMove?: { from: number; to: number } | null
   onSquareClick: (sq: number) => void
 }
@@ -35,7 +65,12 @@ export function Board({ position, lastTo, selected, targets, flipped, bestMove, 
         ))}
       </div>
       <div className="board-row">
-        <div className="board" role="grid" aria-label="将棋盤">
+        <div
+          className="board"
+          role="grid"
+          aria-label="将棋盤"
+          style={{ backgroundImage: `url(${BOARD_IMAGE})` }}
+        >
           {order.map((sq) => {
             const p = position.board[sq]
             const abs = Math.abs(p)
@@ -52,17 +87,12 @@ export function Board({ position, lastTo, selected, targets, flipped, bestMove, 
             return (
               <div key={sq} className={cls} onClick={() => onSquareClick(sq)} role="gridcell">
                 {p !== 0 && (
-                  <div
-                    className={[
-                      'piece',
-                      p < 0 !== flipped ? 'gote' : '',
-                      abs > 8 ? 'promoted' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                  >
-                    {PIECE_CHARS[abs]}
-                  </div>
+                  <img
+                    className="piece"
+                    src={pieceImage(p, flipped)}
+                    alt={PIECE_CHARS[abs]}
+                    draggable={false}
+                  />
                 )}
               </div>
             )
@@ -154,7 +184,12 @@ export function HandStand({ position, owner, label, selectedPiece, onPieceClick 
             className={`chip ${selectedPiece === t ? 'sel' : ''}`}
             onClick={() => onPieceClick(t)}
           >
-            <span className={`piece small ${owner === 1 ? 'gote-chip' : ''}`}>{PIECE_CHARS[t]}</span>
+            <img
+              className="piece small"
+              src={pieceImage(t, false, true)}
+              alt={PIECE_CHARS[t]}
+              draggable={false}
+            />
             {hand[t] > 1 && <span className="count">×{hand[t]}</span>}
           </button>
         ))}
