@@ -7,16 +7,16 @@
   --line: #d8cfbe;
   --accent: #8a5a2b;
   --accent-ink: #fff;
-  --board-1: #efc477;
-  --board-2: #dfa95c;
-  --board-line: #7a5a30;
-  --piece-1: #fbe3b3;
-  --piece-2: #eec98c;
-  --piece-edge: #9c7137;
-  --promoted: #b3261e;
-  --sel: rgba(46, 121, 74, 0.35);
-  --target: rgba(46, 121, 74, 0.85);
-  --last: rgba(228, 160, 34, 0.35);
+  --board-1: #f6d38b;
+  --board-2: #eec06e;
+  --board-line: #4c3a1c;
+  --piece-1: #fdeecb;
+  --piece-2: #f0cf94;
+  --piece-edge: #6b4a1f;
+  --promoted: #c1121f;
+  --sel: rgba(38, 132, 74, 0.45);
+  --target: rgba(27, 122, 63, 0.9);
+  --last: rgba(240, 150, 12, 0.45);
   --eval-line: #3b5bdb;
   --serious: #d64545;
   --warning: #d9822b;
@@ -101,9 +101,19 @@ header .sub { color: var(--ink-2); font-size: 14px; }
   grid-template-columns: repeat(9, 1fr);
   grid-template-rows: repeat(9, 1fr);
   aspect-ratio: 1;
-  background: linear-gradient(135deg, var(--board-1), var(--board-2));
+  /* 榧の木目風: 淡い縦縞を重ねる */
+  background:
+    repeating-linear-gradient(
+      92deg,
+      rgba(160, 110, 40, 0.07) 0px,
+      rgba(160, 110, 40, 0) 3px,
+      rgba(160, 110, 40, 0) 14px,
+      rgba(160, 110, 40, 0.05) 18px
+    ),
+    linear-gradient(160deg, var(--board-1), var(--board-2));
   border: 3px solid var(--board-line);
   border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(60, 40, 10, 0.25);
 }
 .coords-right {
   display: grid;
@@ -187,19 +197,22 @@ header .sub { color: var(--ink-2); font-size: 14px; }
 
 /* ===== 駒 ===== */
 .piece {
-  width: 84%;
-  height: 88%;
+  width: 92%;
+  height: 94%;
   display: flex;
   align-items: center;
   justify-content: center;
-  clip-path: polygon(50% 4%, 86% 26%, 78% 96%, 22% 96%, 14% 26%);
-  background: linear-gradient(160deg, var(--piece-1), var(--piece-2));
-  box-shadow: inset 0 0 0 1.5px var(--piece-edge);
-  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', serif;
-  font-weight: 700;
-  font-size: clamp(15px, min(4.2vw, 30px), 30px);
-  color: #1c1712;
-  padding-top: 8%;
+  clip-path: polygon(50% 3%, 87% 24%, 80% 97%, 20% 97%, 13% 24%);
+  background: linear-gradient(165deg, var(--piece-1) 20%, var(--piece-2) 85%);
+  box-shadow:
+    inset 0 0 0 2px var(--piece-edge),
+    inset 0 -4px 6px rgba(120, 80, 20, 0.25);
+  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', 'HGS明朝E', serif;
+  font-weight: 800;
+  font-size: clamp(16px, min(4.8vw, 34px), 34px);
+  color: #17120c;
+  padding-top: 10%;
+  text-shadow: 0 0.5px 0 rgba(255, 255, 255, 0.5);
 }
 .piece.gote { transform: rotate(180deg); }
 .piece.promoted { color: var(--promoted); }
