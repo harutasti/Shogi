@@ -22,8 +22,17 @@ npm run build    # 本番ビルド (dist/)
 
 ## デプロイ (GitHub Pages)
 
-`main` または開発ブランチへの push で GitHub Actions が自動でビルド&デプロイします。
-初回のみリポジトリの **Settings → Pages → Source を「GitHub Actions」** に設定してください。
+初回のみ、次の2ステップの設定が必要です(以後は push だけで自動デプロイ):
+
+1. **ワークフローを配置**: [`docs/deploy-workflow.yml`](docs/deploy-workflow.yml) の内容を
+   `.github/workflows/deploy.yml` として追加してください。
+   GitHub のリポジトリページで **Add file → Create new file** を開き、ファイル名に
+   `.github/workflows/deploy.yml` と入力して内容を貼り付けるのが簡単です。
+   (ボットの権限ではworkflowファイルを push できないため、この1ファイルだけ手動配置が必要です)
+2. **Pages を有効化**: リポジトリの **Settings → Pages → Source を「GitHub Actions」** に設定。
+
+以降は `main` または開発ブランチへの push で自動的にビルド&デプロイされ、
+`https://<ユーザー名>.github.io/Shogi/` で公開されます。
 
 ## アーキテクチャ
 
