@@ -16,10 +16,12 @@ interface BoardProps {
   selected: number // 選択中のマス。なければ -1
   targets: ReadonlySet<number>
   flipped: boolean
+  /** 解析による最善手 (移動元・先を青枠で表示)。from が -1 なら駒打ち */
+  bestMove?: { from: number; to: number } | null
   onSquareClick: (sq: number) => void
 }
 
-export function Board({ position, lastTo, selected, targets, flipped, onSquareClick }: BoardProps) {
+export function Board({ position, lastTo, selected, targets, flipped, bestMove, onSquareClick }: BoardProps) {
   // 表示順: 通常は sq 0..80 (9筋→1筋, 1段→9段)。反転時は逆順
   const order = Array.from({ length: 81 }, (_, i) => (flipped ? 80 - i : i))
   const files = flipped ? [...ZEN_DIGITS].reverse() : ZEN_DIGITS
@@ -42,6 +44,8 @@ export function Board({ position, lastTo, selected, targets, flipped, onSquareCl
               sq === selected ? 'sel' : '',
               targets.has(sq) ? 'target' : '',
               sq === lastTo ? 'last' : '',
+              bestMove && sq === bestMove.from ? 'best-from' : '',
+              bestMove && sq === bestMove.to ? 'best-to' : '',
             ]
               .filter(Boolean)
               .join(' ')

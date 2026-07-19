@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Board, HandStand, PIECE_CHARS } from './components/Board'
 import { EvalGraph } from './components/EvalGraph'
 import { MoveList } from './components/MoveList'
-import { type Move, type Player, type Position, opponent } from './engine/types'
+import { type Move, type Player, type Position, opponent, sameMove } from './engine/types'
 import { clonePosition, initialPosition, makeMove } from './engine/position'
 import { generateMoves, getStatus, inCheck } from './engine/movegen'
 import { positionKey, toSfen } from './engine/sfen'
@@ -21,6 +21,7 @@ interface GameState {
 
 interface AnalysisState {
   scores: (number | null)[]
+  bestMoves: (Move | null)[]
   running: boolean
 }
 
@@ -230,7 +231,13 @@ export default function App() {
       const msg = e.data
       if (msg.type === 'analyzeProgress' && msg.id === id) {
         setAnalysis((a) =>
-          a ? { ...a, scores: a.scores.map((s, i) => (i === msg.index ? msg.score : s)) } : a,
+          a
+            ? {
+                ...a,
+                scores: a.scores.map((s, i) => (i === msg.index ? msg.score : s)),
+                bestMoves: a.bestMoves.map((b, i) => (i === msg.index ? msg.bestMove : b)),
+              }
+            : a,
         )
       } else if (msg.type === 'analyzeDone' && msg.id === id) {
         setAnalysis((a) => (a ? { ...a, running: false } : a))
@@ -240,7 +247,11 @@ export default function App() {
     }
     analysisWorkerRef.current = w
     const sfens = game.positions.map(toSfen)
-    setAnalysis({ scores: Array(sfens.length).fill(null), running: true })
+    setAnalysis({
+      scores: Array(sfens.length).fill(null),
+      bestMoves: Array(sfens.length).fill(null),
+      running: true,
+    })
     w.postMessage({ type: 'analyze', id, sfens, timeMsPerPosition: 800 })
   }
 
@@ -272,6 +283,21 @@ export default function App() {
   }, [analysis, game.moves])
 
   const analyzedCount = analysis ? analysis.scores.filter((s) => s !== null).length : 0
+
+  // 現在表示中の局面の最善手(解析済みの場合)
+  const bestMoveNow = analysis?.bestMoves[game.cursor] ?? null
+  const bestMoveText = useMemo(() => {
+    if (!bestMoveNow) return null
+    const prevDest = game.cursor > 0 ? game.moves[game.cursor - 1].to : null
+    return (
+      (game.positions[game.cursor].turn === 0 ? '▲' : '△') +
+      moveText(bestMoveNow, prevDest, game.positions[game.cursor].turn)
+    )
+  }, [bestMoveNow, game.cursor, game.moves, game.positions])
+  const playedIsBest =
+    bestMoveNow !== null &&
+    game.cursor < game.moves.length &&
+    sameMove(game.moves[game.cursor], bestMoveNow)
 
   // ===== 棋譜の入出力 =====
   const importKifText = (text: string): void => {
@@ -417,6 +443,7 @@ export default function App() {
               selected={selected}
               targets={targets}
               flipped={flipped}
+              bestMove={bestMoveNow}
               onSquareClick={onSquareClick}
             />
             {pendingPromo && (
@@ -520,6 +547,20 @@ export default function App() {
                 </span>
               )}
             </div>
+            {analysis && (
+              <p className="best-move">
+                この局面の最善手:{' '}
+                {bestMoveText ? (
+                  <strong>{bestMoveText}</strong>
+                ) : analysis.scores[game.cursor] !== null ? (
+                  '—(合法手なし)'
+                ) : (
+                  '解析待ち…'
+                )}
+                {bestMoveText && <span className="best-hint">(盤上に青枠で表示)</span>}
+                {playedIsBest && <span className="agree">✓ 実戦と一致</span>}
+              </p>
+            )}
             {analysis && (
               <EvalGraph
                 scores={analysis.scores}
