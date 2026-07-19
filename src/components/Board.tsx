@@ -71,6 +71,7 @@ export function Board({ position, lastTo, selected, targets, flipped, bestMove, 
           <div className="hoshi h2" />
           <div className="hoshi h3" />
           <div className="hoshi h4" />
+          {bestMove && <BestMoveArrow bestMove={bestMove} flipped={flipped} />}
         </div>
         <div className="coords-right" aria-hidden="true">
           {ranks.map((r) => (
@@ -79,6 +80,53 @@ export function Board({ position, lastTo, selected, targets, flipped, bestMove, 
         </div>
       </div>
     </div>
+  )
+}
+
+/** 最善手を示す矢印オーバーレイ (駒打ちは移動先の円) */
+function BestMoveArrow({
+  bestMove,
+  flipped,
+}: {
+  bestMove: { from: number; to: number }
+  flipped: boolean
+}) {
+  const disp = (sq: number): number => (flipped ? 80 - sq : sq)
+  const to = disp(bestMove.to)
+  const tx = (to % 9) + 0.5
+  const ty = ((to / 9) | 0) + 0.5
+
+  if (bestMove.from === -1) {
+    return (
+      <svg className="best-overlay" viewBox="0 0 9 9" aria-hidden="true">
+        <circle cx={tx} cy={ty} r={0.44} className="best-drop" />
+      </svg>
+    )
+  }
+
+  const from = disp(bestMove.from)
+  const fx = (from % 9) + 0.5
+  const fy = ((from / 9) | 0) + 0.5
+  const dx = tx - fx
+  const dy = ty - fy
+  const len = Math.hypot(dx, dy)
+  const ux = dx / len
+  const uy = dy / len
+  const px = -uy // 矢じり用の垂直方向
+  const py = ux
+  // 先端はマス中央の少し手前、矢じりの底はそこから 0.38 戻った位置
+  const tipX = tx - ux * 0.12
+  const tipY = ty - uy * 0.12
+  const baseX = tipX - ux * 0.38
+  const baseY = tipY - uy * 0.38
+  const headPoints = `${tipX},${tipY} ${baseX + px * 0.24},${baseY + py * 0.24} ${baseX - px * 0.24},${baseY - py * 0.24}`
+
+  return (
+    <svg className="best-overlay" viewBox="0 0 9 9" aria-hidden="true">
+      <line x1={fx} y1={fy} x2={baseX} y2={baseY} className="shaft-halo" />
+      <line x1={fx} y1={fy} x2={baseX} y2={baseY} className="shaft" />
+      <polygon points={headPoints} className="head" />
+    </svg>
   )
 }
 

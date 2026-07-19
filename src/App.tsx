@@ -557,7 +557,7 @@ export default function App() {
                 ) : (
                   '解析待ち…'
                 )}
-                {bestMoveText && <span className="best-hint">(盤上に青枠で表示)</span>}
+                {bestMoveText && <span className="best-hint">(盤上に青矢印で表示)</span>}
                 {playedIsBest && <span className="agree">✓ 実戦と一致</span>}
               </p>
             )}
