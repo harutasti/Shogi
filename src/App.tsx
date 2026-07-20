@@ -452,9 +452,12 @@ export default function App() {
 
   return (
     <div className="app">
-      <header>
-        <h1>将棋</h1>
-        <span className="sub">対局 & 棋譜解析</span>
+      <header className="app-header">
+        <div className="brand-mark" aria-hidden="true">王</div>
+        <div className="brand-copy">
+          <h1>将棋</h1>
+          <span className="sub">対局と棋譜解析</span>
+        </div>
       </header>
 
       <div className="layout">
@@ -500,12 +503,26 @@ export default function App() {
             selectedPiece={bottomOwner === current.turn ? selectedHand : 0}
             onPieceClick={(t) => onHandClick(bottomOwner, t)}
           />
-          <div className={`statusbar ${atLive && result ? 'over' : ''}`} role="status" aria-live="polite">{statusText}</div>
+          <div
+            className={`statusbar ${atLive && result ? 'over' : ''} ${atLive && thinking ? 'thinking' : ''} ${!atLive ? 'reviewing' : ''}`}
+            role="status"
+            aria-live="polite"
+          >
+            <span className="status-dot" aria-hidden="true" />
+            <span>{statusText}</span>
+          </div>
         </section>
 
         <aside className="panel">
           <div className="card">
-            <div className="row">
+            <div className="card-heading">
+              <div>
+                <h2>対局</h2>
+                <p>先後と対戦相手</p>
+              </div>
+              <span className="turn-badge">{current.turn === 0 ? '▲ 先手番' : '△ 後手番'}</span>
+            </div>
+            <div className="row player-row">
               <label>
                 ☗先手
                 <select
@@ -533,7 +550,7 @@ export default function App() {
                 </select>
               </label>
             </div>
-            <div className="row">
+            <div className="row action-row">
               <button className="primary" onClick={requestNewGame}>新規対局</button>
               <button
                 onClick={() => setConfirmAction('resign')}
@@ -546,15 +563,21 @@ export default function App() {
           </div>
 
           <div className="card">
+            <div className="card-heading">
+              <div>
+                <h2>棋譜</h2>
+                <p>局面の移動・保存・共有</p>
+              </div>
+            </div>
             <div className="row nav-row">
-              <button onClick={() => seek(0)} disabled={game.cursor === 0}>|&lt;</button>
-              <button onClick={() => seek(game.cursor - 1)} disabled={game.cursor === 0}>&lt;</button>
+              <button className="icon-button" aria-label="開始局面へ" title="開始局面へ" onClick={() => seek(0)} disabled={game.cursor === 0}>↤</button>
+              <button className="icon-button" aria-label="1手戻る" title="1手戻る" onClick={() => seek(game.cursor - 1)} disabled={game.cursor === 0}>‹</button>
               <span className="nav-pos">{game.cursor} / {game.moves.length}</span>
-              <button onClick={() => seek(game.cursor + 1)} disabled={atLive}>&gt;</button>
-              <button onClick={() => seek(game.moves.length)} disabled={atLive}>&gt;|</button>
+              <button className="icon-button" aria-label="1手進む" title="1手進む" onClick={() => seek(game.cursor + 1)} disabled={atLive}>›</button>
+              <button className="icon-button" aria-label="最終局面へ" title="最終局面へ" onClick={() => seek(game.moves.length)} disabled={atLive}>↦</button>
             </div>
             <MoveList texts={moveTexts} marks={marks} scores={analysis?.scores ?? []} cursor={game.cursor} onSeek={seek} />
-            <div className="row">
+            <div className="row utility-row">
               <button onClick={() => setKifOpen(true)}>KIF読込</button>
               <button onClick={downloadKif} disabled={game.moves.length === 0}>KIF保存</button>
               <button onClick={copyShareUrl} disabled={game.moves.length === 0}>URL共有</button>
@@ -562,7 +585,13 @@ export default function App() {
           </div>
 
           <div className="card">
-            <div className="row">
+            <div className="card-heading">
+              <div>
+                <h2>AI解析</h2>
+                <p>評価値と、この局面の最善手</p>
+              </div>
+            </div>
+            <div className="row analysis-actions">
               {analysis?.running ? (
                 <button onClick={cancelAnalysis}>解析中止</button>
               ) : (
