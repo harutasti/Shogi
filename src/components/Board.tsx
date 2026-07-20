@@ -1,4 +1,5 @@
-import type { Position } from '../engine/types'
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { fileOf, rankOf, type Position } from '../engine/types'
 
 const ZEN_DIGITS = ['９', '８', '７', '６', '５', '４', '３', '２', '１']
 const KANJI_RANKS = ['一', '二', '三', '四', '五', '六', '七', '八', '九']
@@ -8,6 +9,12 @@ export const PIECE_CHARS: Record<number, string> = {
   1: '歩', 2: '香', 3: '桂', 4: '銀', 5: '金', 6: '角', 7: '飛', 8: '玉',
   9: 'と', 10: '杏', 11: '圭', 12: '全', 14: '馬', 15: '龍',
 }
+
+const PIECE_NAMES: Record<number, string> = {
+  1: '歩', 2: '香車', 3: '桂馬', 4: '銀将', 5: '金将', 6: '角行', 7: '飛車', 8: '玉将',
+  9: 'と金', 10: '成香', 11: '成桂', 12: '成銀', 14: '馬', 15: '龍',
+}
+const ZEN_FILES = ['', '１', '２', '３', '４', '５', '６', '７', '８', '９']
 
 const PIECE_ASSET_NAMES: Record<number, string> = {
   1: 'pawn',
@@ -48,17 +55,79 @@ interface BoardProps {
   flipped: boolean
   /** 解析による最善手 (移動元・先を矢印で表示)。from が -1 なら駒打ち */
   bestMove?: { from: number; to: number } | null
+  interactive: boolean
   onSquareClick: (sq: number) => void
 }
 
-export function Board({ position, lastTo, selected, targets, flipped, bestMove, onSquareClick }: BoardProps) {
+export function boardSquareLabel(
+  position: Position,
+  sq: number,
+  state: {
+    selected: boolean
+    target: boolean
+    last: boolean
+    bestFrom: boolean
+    bestTo: boolean
+  },
+): string {
+  const p = position.board[sq]
+  const coordinate = `${ZEN_FILES[fileOf(sq)]}${KANJI_RANKS[rankOf(sq) - 1]}`
+  const content = p === 0 ? '空き' : `${p > 0 ? '先手' : '後手'}の${PIECE_NAMES[Math.abs(p)]}`
+  const descriptions = [
+    state.selected ? '選択中' : '',
+    state.target ? '移動可能' : '',
+    state.last ? '直前手' : '',
+    state.bestFrom ? '最善手の移動元' : '',
+    state.bestTo ? '最善手の移動先' : '',
+  ].filter(Boolean)
+  return `${coordinate} ${content}${descriptions.length > 0 ? ` ${descriptions.join(' ')}` : ''}`
+}
+
+export function nextBoardSquare(sq: number, key: string, flipped: boolean): number {
+  const display = flipped ? 80 - sq : sq
+  const row = Math.floor(display / 9)
+  const col = display % 9
+  let next = display
+  if (key === 'ArrowLeft' && col > 0) next--
+  else if (key === 'ArrowRight' && col < 8) next++
+  else if (key === 'ArrowUp' && row > 0) next -= 9
+  else if (key === 'ArrowDown' && row < 8) next += 9
+  else if (key === 'Home') next = row * 9
+  else if (key === 'End') next = row * 9 + 8
+  return flipped ? 80 - next : next
+}
+
+export function Board({ position, lastTo, selected, targets, flipped, bestMove, interactive, onSquareClick }: BoardProps) {
   // 表示順: 通常は sq 0..80 (9筋→1筋, 1段→9段)。反転時は逆順
   const order = Array.from({ length: 81 }, (_, i) => (flipped ? 80 - i : i))
   const files = flipped ? [...ZEN_DIGITS].reverse() : ZEN_DIGITS
   const ranks = flipped ? [...KANJI_RANKS].reverse() : KANJI_RANKS
+  const [focusedSquare, setFocusedSquare] = useState(flipped ? 80 : 0)
+  const cellRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  useEffect(() => setFocusedSquare(flipped ? 80 : 0), [flipped])
+
+  const onCellKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>, sq: number): void => {
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault()
+      event.stopPropagation()
+      const next = nextBoardSquare(sq, event.key, flipped)
+      setFocusedSquare(next)
+      cellRefs.current[next]?.focus()
+      return
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      event.stopPropagation()
+      onSquareClick(sq)
+    }
+  }
 
   return (
     <div className="board-wrap">
+      <p id="board-keyboard-help" className="sr-only">
+        矢印キーで盤上を移動し、EnterまたはSpaceで駒の選択と着手を行います。HomeとEndで同じ段の端へ移動します。
+      </p>
       <div className="coords-top" aria-hidden="true">
         {files.map((f) => (
           <span key={f}>{f}</span>
@@ -69,11 +138,14 @@ export function Board({ position, lastTo, selected, targets, flipped, bestMove, 
           className="board"
           role="grid"
           aria-label="将棋盤"
+          aria-describedby="board-keyboard-help"
+          aria-rowcount={9}
+          aria-colcount={9}
+          aria-disabled={!interactive}
           style={{ backgroundImage: `url(${BOARD_IMAGE})` }}
         >
           {order.map((sq) => {
             const p = position.board[sq]
-            const abs = Math.abs(p)
             const cls = [
               'cell',
               sq === selected ? 'sel' : '',
@@ -84,13 +156,35 @@ export function Board({ position, lastTo, selected, targets, flipped, bestMove, 
             ]
               .filter(Boolean)
               .join(' ')
+            const display = flipped ? 80 - sq : sq
+            const ariaState = {
+              selected: sq === selected,
+              target: targets.has(sq),
+              last: sq === lastTo,
+              bestFrom: !!bestMove && sq === bestMove.from,
+              bestTo: !!bestMove && sq === bestMove.to,
+            }
             return (
-              <div key={sq} className={cls} onClick={() => onSquareClick(sq)} role="gridcell">
+              <div
+                key={sq}
+                ref={(element) => { cellRefs.current[sq] = element }}
+                className={cls}
+                onClick={() => onSquareClick(sq)}
+                onFocus={() => setFocusedSquare(sq)}
+                onKeyDown={(event) => onCellKeyDown(event, sq)}
+                role="gridcell"
+                tabIndex={sq === focusedSquare ? 0 : -1}
+                aria-label={boardSquareLabel(position, sq, ariaState)}
+                aria-rowindex={Math.floor(display / 9) + 1}
+                aria-colindex={(display % 9) + 1}
+                aria-selected={ariaState.selected}
+              >
                 {p !== 0 && (
                   <img
                     className="piece"
                     src={pieceImage(p, flipped)}
-                    alt={PIECE_CHARS[abs]}
+                    alt=""
+                    aria-hidden="true"
                     draggable={false}
                   />
                 )}
@@ -183,6 +277,8 @@ export function HandStand({ position, owner, label, selectedPiece, onPieceClick 
             key={t}
             className={`chip ${selectedPiece === t ? 'sel' : ''}`}
             onClick={() => onPieceClick(t)}
+            aria-label={`${owner === 0 ? '先手' : '後手'}の持ち駒 ${PIECE_NAMES[t]} ${hand[t]}枚`}
+            aria-pressed={selectedPiece === t}
           >
             <img
               className="piece small"

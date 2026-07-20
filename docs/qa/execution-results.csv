@@ -35,3 +35,10 @@ RUN-001,ENV-02 Narrow,,,CU-15,駒取り・持ち駒・駒打ち・二歩,Not Run
 RUN-001,ENV-02 Narrow,,,CU-16,過去局面からの分岐,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
 RUN-001,ENV-02 Narrow,,,CU-17,壊れた共有URLとブラウザ復帰,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
 RUN-001,ENV-02 Narrow,,,CU-18,解析中止・連打・長棋譜,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
+RUN-002,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-04,投了と新規対局,Pass,,docs/qa/evidence/RUN-002/CU-04-confirm-retest.jpeg,投了と新規対局の両方で影響説明付き確認を表示。安全側のキャンセルに初期フォーカスしEscape取消と確定後の状態更新を確認。,#7,,Yes,
+RUN-002,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-06,KIF読込（正常系）,Pass,,docs/qa/evidence/RUN-002/CU-06-kif-final-retest.jpeg,5手KIFの読込直後に5/5の最終局面と終局情報を表示。,#6,,Yes,
+RUN-002,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-10,URL共有,Pass,,docs/qa/evidence/RUN-002/CU-10-url-final-retest.jpeg,共有URLを直接開いた直後に同じ5手と5/5の最終局面を表示。新規対局後は古いmoves hashも消去。,#6,,Yes,
+RUN-002,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-13,キーボードフォーカスと読み上げ可能性,Pass,,docs/qa/evidence/RUN-002/CU-13-keyboard-retest.jpeg,Tabで盤へ到達し矢印キーとEnterだけで7七歩を7六へ着手。各マスは座標・所有者・駒種・選択状態を読み上げ可能。,#5,,Yes,
+RUN-002,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-04,投了と新規対局,Pass,,docs/qa/evidence/RUN-002/CU-04-confirm-narrow-retest.jpeg,Chrome DevTools Responsive 400px幅で確認文と両ボタンが収まりキャンセルへ初期フォーカス。,#7,,Yes,
+RUN-002,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-06,KIF読込（正常系）,Pass,,docs/qa/evidence/RUN-002/CU-06-kif-final-narrow-retest.jpeg,400px幅でも5手KIFの読込直後に5/5の最終局面と終局情報を表示。,#6,,Yes,
+RUN-002,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-10,URL共有,Pass,,docs/qa/evidence/RUN-002/CU-10-url-final-narrow-retest.jpeg,400px幅でも共有URLの初回表示が5/5の最終局面になり盤と操作部品の重なりなし。,#6,,Yes,

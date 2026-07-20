@@ -11,8 +11,9 @@ import { moveToUsi, usiToMove } from './engine/usi'
 import type { WorkerResponse } from './ai/worker'
 
 type PlayerKind = 'human' | 1 | 2 | 3 | 4
+type ConfirmAction = 'resign' | 'newGame'
 
-interface GameState {
+export interface GameState {
   moves: Move[]
   /** positions[i] = i手目まで進めた局面 (positions[0] = 初期局面) */
   positions: Position[]
@@ -26,6 +27,17 @@ interface AnalysisState {
 }
 
 const newGameState = (): GameState => ({ moves: [], positions: [initialPosition()], cursor: 0 })
+export const restoredGameState = (moves: Move[]): GameState => ({
+  moves,
+  positions: replayPositions(moves),
+  cursor: moves.length,
+})
+
+const clearSharedMovesHash = (): void => {
+  if (window.location.hash.startsWith('#moves=')) {
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
+  }
+}
 
 const createAiWorker = (): Worker =>
   new Worker(new URL('./ai/worker.ts', import.meta.url), { type: 'module' })
@@ -52,6 +64,7 @@ export default function App() {
   const [kifOpen, setKifOpen] = useState(false)
   const [kifText, setKifText] = useState('')
   const [toast, setToast] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null)
 
   const playWorkerRef = useRef<Worker | null>(null)
   const analysisWorkerRef = useRef<Worker | null>(null)
@@ -304,7 +317,7 @@ export default function App() {
     try {
       const parsed = parseKif(text)
       if (parsed.moves.length === 0) throw new Error('指し手が見つかりませんでした')
-      setGame({ moves: parsed.moves, positions: replayPositions(parsed.moves), cursor: 0 })
+      setGame(restoredGameState(parsed.moves))
       setPlayers({ 0: 'human', 1: 'human' })
       setResigned(null)
       setEndNote(parsed.endText)
@@ -312,6 +325,7 @@ export default function App() {
       setKifOpen(false)
       setKifText('')
       clearSelection()
+      clearSharedMovesHash()
       setToast(`棋譜を読み込みました(全${parsed.moves.length}手)`)
     } catch (e) {
       setToast(`読み込み失敗: ${(e as Error).message}`)
@@ -355,8 +369,12 @@ export default function App() {
         moves.push(mv)
         makeMove(pos, mv)
       }
-      setGame({ moves, positions: replayPositions(moves), cursor: 0 })
+      setGame(restoredGameState(moves))
       setPlayers({ 0: 'human', 1: 'human' })
+      setResigned(null)
+      setEndNote(null)
+      setAnalysis(null)
+      clearSelection()
       setToast(`共有された棋譜を読み込みました(全${moves.length}手)`)
     } catch {
       setToast('共有URLの読み込みに失敗しました')
@@ -364,7 +382,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const newGame = (): void => {
+  const resetGame = (): void => {
     reqIdRef.current++ // 思考中のAI応答を無効化
     setGame(newGameState())
     setResigned(null)
@@ -372,6 +390,18 @@ export default function App() {
     setAnalysis(null)
     setThinking(false)
     clearSelection()
+    clearSharedMovesHash()
+  }
+
+  const requestNewGame = (): void => {
+    if (game.moves.length > 0 || resigned !== null || endNote !== null) setConfirmAction('newGame')
+    else resetGame()
+  }
+
+  const confirmDestructiveAction = (): void => {
+    if (confirmAction === 'resign') setResigned(live.turn)
+    else if (confirmAction === 'newGame') resetGame()
+    setConfirmAction(null)
   }
 
   const seek = (i: number): void => {
@@ -382,7 +412,7 @@ export default function App() {
   // 矢印キーで棋譜ナビゲーション
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
-      if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return
+      if (e.target instanceof HTMLElement && e.target.closest('textarea, input, select, button, [role="grid"], [role="dialog"]')) return
       if (e.key === 'ArrowLeft') seek(game.cursor - 1)
       if (e.key === 'ArrowRight') seek(game.cursor + 1)
       if (e.key === 'Home') seek(0)
@@ -444,6 +474,7 @@ export default function App() {
               targets={targets}
               flipped={flipped}
               bestMove={bestMoveNow}
+              interactive={interactive}
               onSquareClick={onSquareClick}
             />
             {pendingPromo && (
@@ -469,7 +500,7 @@ export default function App() {
             selectedPiece={bottomOwner === current.turn ? selectedHand : 0}
             onPieceClick={(t) => onHandClick(bottomOwner, t)}
           />
-          <div className={`statusbar ${atLive && result ? 'over' : ''}`}>{statusText}</div>
+          <div className={`statusbar ${atLive && result ? 'over' : ''}`} role="status" aria-live="polite">{statusText}</div>
         </section>
 
         <aside className="panel">
@@ -503,9 +534,9 @@ export default function App() {
               </label>
             </div>
             <div className="row">
-              <button className="primary" onClick={newGame}>新規対局</button>
+              <button className="primary" onClick={requestNewGame}>新規対局</button>
               <button
-                onClick={() => setResigned(live.turn)}
+                onClick={() => setConfirmAction('resign')}
                 disabled={!!result || players[live.turn] !== 'human' || game.moves.length === 0}
               >
                 投了
@@ -582,8 +613,8 @@ export default function App() {
 
       {kifOpen && (
         <div className="modal-overlay" onClick={() => setKifOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>KIF形式の棋譜を読み込む</h2>
+          <div className="modal" role="dialog" aria-modal="true" aria-labelledby="kif-dialog-title" onClick={(e) => e.stopPropagation()}>
+            <h2 id="kif-dialog-title">KIF形式の棋譜を読み込む</h2>
             <p className="hint">将棋ウォーズ・81Dojo などからエクスポートしたKIFを貼り付けるか、ファイルを選択してください(平手のみ対応)。</p>
             <textarea
               value={kifText}
@@ -619,7 +650,45 @@ export default function App() {
         </div>
       )}
 
-      {toast && <div className="toast">{toast}</div>}
+      {confirmAction && (
+        <div
+          className="modal-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setConfirmAction(null)
+          }}
+        >
+          <div
+            className="modal confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirm-dialog-title"
+            aria-describedby="confirm-dialog-description"
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.preventDefault()
+                setConfirmAction(null)
+              }
+            }}
+          >
+            <h2 id="confirm-dialog-title">
+              {confirmAction === 'resign' ? '投了しますか？' : '新しい対局を始めますか？'}
+            </h2>
+            <p id="confirm-dialog-description">
+              {confirmAction === 'resign'
+                ? '投了すると現在の対局が終了し、取り消せません。'
+                : `現在の棋譜（${game.moves.length}手）は失われます。必要なら先にKIF保存してください。`}
+            </p>
+            <div className="row confirm-actions">
+              <button autoFocus onClick={() => setConfirmAction(null)}>キャンセル</button>
+              <button className="danger" onClick={confirmDestructiveAction}>
+                {confirmAction === 'resign' ? '投了する' : '新規対局を始める'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && <div className="toast" role="status" aria-live="polite">{toast}</div>}
     </div>
   )
 }
