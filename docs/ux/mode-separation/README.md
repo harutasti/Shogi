@@ -12,6 +12,7 @@ GitHub Issue #9「対局とAI解析の情報分離で操作負荷を下げられ
 | `scenarios.csv` | 全案で共通利用するタスクシナリオ |
 | `baseline.csv` | 現行公開版の測定結果。自動操作と人間テストを区別する |
 | `prototype-results.csv` | 比較プロトタイプの測定結果 |
+| `prototype-run.md` | プロトタイプURL、実行条件、集計、証跡 |
 | `decision.md` | 結果の要約、トレードオフ、採用判断 |
 | `UX_Mode_Separation_Discovery_Tracker.xlsx` | CSVを閲覧・入力しやすくした操作用台帳 |
 
@@ -27,7 +28,9 @@ Computer Useの成功を、人間が迷わないことの証明として扱わ�
 ## 現在のフェーズ
 
 1. 現行版のベースライン取得
-2. 比較する3案の低忠実度プロトタイプ作成
-3. 同一シナリオで比較
-4. 初見ユーザーテスト
+2. 比較する3案の低忠実度プロトタイプ作成（完了）
+3. 同一シナリオでComputer Use比較（30 / 30 Pass）
+4. B・D案の初見ユーザーテスト
 5. 採用／不採用の判断
+
+プロダクトの通常URLは変更していない。プロトタイプは`?prototype=mode-separation&variant=A|B|D`を付けたときだけ表示する。
