@@ -1,0 +1,14 @@
+test_id,category,title,default_priority,active,automation,objective,spec_section
+CU-01,表示・初見性,初回表示と第一印象,P0,Yes,Manual Only,読み込み成功と初見での分かりやすさを確認する,5
+CU-02,対局,対局開始とプレイヤー設定,P0,Yes,Candidate,対局条件を理解して開始できるか確認する,5
+CU-03,対局,駒選択・合法手・着手,P0,Yes,Candidate,基本の一手を迷わず指せるか確認する,5
+CU-04,対局,投了と新規対局,P1,Yes,Candidate,対局終了と再開始の挙動を確認する,5
+CU-05,盤操作,盤反転,P1,Yes,Candidate,盤反転時の座標・駒向き・操作整合性を確認する,5
+CU-06,棋譜入出力,KIF読込（正常系）,P0,Yes,Candidate,外部棋譜を迷わず取り込めるか確認する,5
+CU-07,棋譜入出力,KIF読込（異常系）,P1,Yes,Candidate,入力エラーから復帰できるか確認する,5
+CU-08,棋譜閲覧,棋譜移動とキーボード操作,P1,Yes,Candidate,過去局面の閲覧と現在位置の把握を確認する,5
+CU-09,解析,棋譜解析と最善手,P0,Yes,Manual Only,解析開始から結果閲覧までの一連の体験を確認する,5
+CU-10,共有,URL共有,P1,Yes,Candidate,棋譜共有の成功と復元性を確認する,5
+CU-11,棋譜入出力,KIF保存,P1,Yes,Manual Only,棋譜をファイルとして保存できるか確認する,5
+CU-12,レスポンシブ,狭い画面での操作,P0,Yes,Manual Only,小さい画面でも主要フローが成立するか確認する,5
+CU-13,アクセシビリティ,キーボードフォーカスと読み上げ可能性,P1,Yes,Manual Only,マウス以外でも主要操作に到達できるか確認する,5
