@@ -1,0 +1,6 @@
+scenario_id,journey,goal,start_state,task_prompt,success_criteria,critical_failure,primary_metrics,desktop,narrow,notes
+UX-01,対局開始,対局条件を設定して開始する,初期局面・先手あなた・後手AI初級,あなたが先手でAI初級との新しい対局を始めてください,0手目の先手番で対局操作が可能になる,意図しない設定または棋譜消失に気付かず開始する,elapsed_seconds|click_count|scroll_count|error_count,Yes,Yes,新規対局確認が出ない初期状態を使用
+UX-02,着手と棋譜確認,一手指してAI応手と棋譜を確認する,UX-01完了直後,７七の歩を７六へ動かしAIの応手後に棋譜を確認してください,2手以上の棋譜と現在手数を確認できる,非合法手・別の駒・AI応手前の誤認,elapsed_seconds|click_count|scroll_count|error_count,Yes,Yes,AI応手は毎回異なる可能性あり
+UX-03,対局から解析,現在の棋譜を解析して最善手を確認する,2手以上の棋譜あり・最終局面,この対局をAIで解析し現在局面の最善手を確認してください,解析完了後に現在局面の最善手または合法手なしを確認できる,解析開始を発見できない・別局面の結果を現在局面と誤認する,elapsed_seconds|click_count|scroll_count|error_count,Yes,Yes,解析完了待ちを時間に含む
+UX-04,KIF解析,外部棋譜を読み込み特定局面を調べる,初期局面,テストKIFを読み込み3手目へ移動して評価を確認してください,5手KIFの3手目と対応する解析結果を確認できる,KIF読込失敗・局面を誤認・元棋譜を意図せず失う,elapsed_seconds|click_count|scroll_count|recovery_count,Yes,Yes,既存QA仕様の正常系KIFを使用
+UX-05,保存と共有,解析後の棋譜を持ち出す,解析済みの5手KIF・3手目,この棋譜を保存できる場所と共有できる操作を示しURL共有を実行してください,保存操作とURL共有操作を発見し共有完了を確認できる,誤って新規対局・投了・棋譜破棄を実行する,elapsed_seconds|click_count|scroll_count|error_count,Yes,Yes,ダウンロード実行は不要・URL共有のみ実行
