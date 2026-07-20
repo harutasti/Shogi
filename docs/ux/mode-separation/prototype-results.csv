@@ -1,0 +1,1 @@
+run_id,record_type,scenario_id,variant,environment,viewport,test_date,operator,method,status,elapsed_seconds,click_count,scroll_count,key_count,error_count,recovery_count,start_state,end_state,observation,evidence,human_participant_id,limitations
