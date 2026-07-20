@@ -1,27 +1,37 @@
 run_id,environment,test_date,tester,test_id,title,status,duration_minutes,evidence,observation,issue_id,blocker_fail_reason,retest,notes
-RUN-001,ENV-01 Desktop,,,CU-01,初回表示と第一印象,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-02,対局開始とプレイヤー設定,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-03,駒選択・合法手・着手,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-04,投了と新規対局,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-05,盤反転,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-06,KIF読込（正常系）,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-07,KIF読込（異常系）,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-08,棋譜移動とキーボード操作,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-09,棋譜解析と最善手,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-10,URL共有,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-11,KIF保存,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-12,狭い画面での操作,Not Run,,,,,,No,
-RUN-001,ENV-01 Desktop,,,CU-13,キーボードフォーカスと読み上げ可能性,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-01,初回表示と第一印象,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-02,対局開始とプレイヤー設定,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-03,駒選択・合法手・着手,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-04,投了と新規対局,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-05,盤反転,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-06,KIF読込（正常系）,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-07,KIF読込（異常系）,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-08,棋譜移動とキーボード操作,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-09,棋譜解析と最善手,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-10,URL共有,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-11,KIF保存,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-12,狭い画面での操作,Not Run,,,,,,No,
-RUN-001,ENV-02 Narrow,,,CU-13,キーボードフォーカスと読み上げ可能性,Not Run,,,,,,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-01,初回表示と第一印象,Pass,,docs/qa/evidence/RUN-001/CU-01-initial-desktop.png,9×9盤と全駒および主要操作を確認。欠損画像や重なりなし。,,,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-02,対局開始とプレイヤー設定,Pass,,,人間先手とAI先手の両設定で開始。AI先手は自動で初手を着手。,,,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-03,駒選択・合法手・着手,Pass,,docs/qa/evidence/RUN-001/CU-03-legal-move-marker.png;docs/qa/evidence/RUN-001/CU-03-after-first-move.png,合法手マーカーと選択状態が明瞭。非合法マスでは局面不変。着手後にAI応手と棋譜を更新。,,,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-04,投了と新規対局,Pass,,docs/qa/evidence/RUN-001/CU-04-resign.png,投了結果と新規対局の初期化は正しいが両操作とも確認なしで即時実行。,#7,,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-05,盤反転,Pass,,docs/qa/evidence/RUN-001/CU-05-board-flipped.png,座標と駒向きが一貫して反転し反転後も着手可能。,,,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-06,KIF読込（正常系）,Fail,,docs/qa/evidence/RUN-001/CU-06-valid-kif-loaded.png,5手と終局情報は読み込むが表示位置が0/5で初期局面。,#6,読込直後に期待する最終局面5/5を表示しない,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-07,KIF読込（異常系）,Pass,,docs/qa/evidence/RUN-001/CU-07-invalid-kif-error.png,非合法手の位置と理由を表示し元の5/5局面を保持。,,,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-08,棋譜移動とキーボード操作,Pass,,docs/qa/evidence/RUN-001/CU-08-final-position.png,先頭末尾と前後移動および左右矢印で盤面・手数・棋譜一覧が同期。,,,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-09,棋譜解析と最善手,Pass,,docs/qa/evidence/RUN-001/CU-09-analysis-started.png;docs/qa/evidence/RUN-001/CU-09-analysis-complete.png,進捗3/6から6/6へ完了。最善手・青矢印・評価グラフが局面移動に追従。,,,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-10,URL共有,Fail,,docs/qa/evidence/RUN-001/CU-10-shared-url-restored.png,コピーURLで5手は復元するが新規タブは0/5の初期局面を表示。,#6,共有URLを開いた直後に期待する最終局面5/5を表示しない,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-11,KIF保存,Pass,,,415BのKIFを1件保存しmacOSファイル選択から再読込して同じ5手を復元。,,,No,保存名はshogi_1784521965128.kif
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-12,狭い画面での操作,N/A,,,狭い画面専用ケースのためDesktopでは対象外。,,,No,
+RUN-001,ENV-01 Desktop,2026-07-20,Codex Computer Use,CU-13,キーボードフォーカスと読み上げ可能性,Fail,,docs/qa/evidence/RUN-001/CU-13-keyboard-focus-gap.png,Tab移動は盤81マスをスキップ。駒画像とセルに座標・駒種の意味ある名前がない。,#5,キーボードだけで盤上操作を完了できない,No,
+RUN-001,ENV-01 Desktop,,,CU-14,成り・不成・強制成り,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
+RUN-001,ENV-01 Desktop,,,CU-15,駒取り・持ち駒・駒打ち・二歩,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
+RUN-001,ENV-01 Desktop,,,CU-16,過去局面からの分岐,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
+RUN-001,ENV-01 Desktop,,,CU-17,壊れた共有URLとブラウザ復帰,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
+RUN-001,ENV-01 Desktop,,,CU-18,解析中止・連打・長棋譜,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-01,初回表示と第一印象,Pass,,docs/qa/evidence/RUN-001/CU-12-mobile-initial.png,400×625で盤全体と主要状態が横スクロールなしで表示。,,,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-02,対局開始とプレイヤー設定,Pass,,docs/qa/evidence/RUN-001/CU-12-mobile-controls.png,プレイヤー選択と主要ボタンが縦配置され重なりなく操作可能。,,,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-03,駒選択・合法手・着手,Pass,,docs/qa/evidence/RUN-001/CU-03-mobile-move.png,実タップで歩を選択し合法手マーカーを確認して7七から7六へ着手。,,,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-04,投了と新規対局,Pass,,docs/qa/evidence/RUN-001/CU-03-mobile-move.png,狭幅でも投了結果を表示。確認なし即時実行のUX課題はDesktopと同じ。,#7,,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-05,盤反転,Pass,,docs/qa/evidence/RUN-001/CU-12-mobile-flipped-board.png,盤反転後も盤・座標・矢印が整列し着手可能。,,,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-06,KIF読込（正常系）,Fail,,docs/qa/evidence/RUN-001/CU-12-mobile-kif-dialog.png,モーダルは収まるが読込後はDesktop同様0/5を表示。,#6,読込直後に期待する最終局面5/5を表示しない,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-07,KIF読込（異常系）,Pass,,docs/qa/evidence/RUN-001/CU-07-mobile-invalid-kif.png,400px幅でも非合法手エラーを表示し元局面を保持。,,,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-08,棋譜移動とキーボード操作,Pass,,docs/qa/evidence/RUN-001/CU-12-mobile-controls.png,局面移動ボタンが重ならず盤面・手数・棋譜一覧が同期。,,,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-09,棋譜解析と最善手,Pass,,docs/qa/evidence/RUN-001/CU-12-mobile-analysis.png,解析済み2/2と最善手・評価グラフを狭幅内で確認。,,,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-10,URL共有,Fail,,docs/qa/evidence/RUN-001/CU-10-shared-url-restored.png,共有URLの棋譜は復元するが初期表示は0/5。,#6,共有URLを開いた直後に期待する最終局面5/5を表示しない,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-11,KIF保存,Pass,,,狭幅でも保存操作と再読込フローを妨げる重なりなし。,,,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-12,狭い画面での操作,Pass,,docs/qa/evidence/RUN-001/CU-12-mobile-initial.png;docs/qa/evidence/RUN-001/CU-12-mobile-controls.png;docs/qa/evidence/RUN-001/CU-12-mobile-analysis.png,400×625で着手・KIF・解析・盤反転・投了を完了。横スクロールや重なりなし。,,,No,
+RUN-001,ENV-02 Narrow,2026-07-20,Codex Computer Use,CU-13,キーボードフォーカスと読み上げ可能性,Fail,,docs/qa/evidence/RUN-001/CU-13-keyboard-focus-gap.png,狭幅でも盤のDOMとアクセシビリティ上の制約は同じ。,#5,キーボードだけで盤上操作を完了できない,No,
+RUN-001,ENV-02 Narrow,,,CU-14,成り・不成・強制成り,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
+RUN-001,ENV-02 Narrow,,,CU-15,駒取り・持ち駒・駒打ち・二歩,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
+RUN-001,ENV-02 Narrow,,,CU-16,過去局面からの分岐,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
+RUN-001,ENV-02 Narrow,,,CU-17,壊れた共有URLとブラウザ復帰,Not Run,,,,,,No,網羅不足としてRUN-001後に追加
+RUN-001,ENV-02 Narrow,,,CU-18,解析中止・連打・長棋譜,Not Run,,,,,,No,網羅不足としてRUN-001後に追加

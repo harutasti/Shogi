@@ -10,6 +10,8 @@ Computer Useによる手動ブラックボックステストの仕様、実行�
 | `test-cases.csv` | ケースID、分類、優先度などの一覧 | 差分確認しやすいケース台帳 |
 | `execution-results.csv` | 環境別の実行結果 | 追記型の実行ログ |
 | `issues.csv` | 不具合・UX改善候補 | 追記型の課題ログ |
+| `runs/RUN-001.md` | 実行環境、集計、判断、未実施範囲 | 実行レポート |
+| `evidence/RUN-001/` | Computer Useで取得した画面証拠 | 実行レポートに紐づく証拠 |
 | `Shogi_Computer_Use_Test_Tracker.xlsx` | 入力規則・集計付きの操作用台帳 | 便利なスナップショット（バイナリ） |
 
 CSVをレビューと履歴確認の正本とし、Excelはテスト実施時の入力・集計用に使う。Excelを更新した場合は、同じ変更内容を対応するCSVにも反映する。
