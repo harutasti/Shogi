@@ -11,6 +11,11 @@ import './mode-separation.css'
 
 export type PrototypeVariant = 'A' | 'B' | 'D'
 type WorkspaceMode = 'game' | 'analysis'
+type KifImportPlacement = {
+  game: boolean
+  record: boolean
+  analysis: boolean
+}
 
 interface PrototypeGame {
   moves: Move[]
@@ -58,6 +63,12 @@ export function prototypeGameFromUsi(usiMoves: string[]): PrototypeGame {
   return { moves, positions: replayPositions(moves), cursor: moves.length }
 }
 
+export function prototypeKifImportPlacement(variant: PrototypeVariant): KifImportPlacement {
+  return variant === 'A'
+    ? { game: false, record: false, analysis: true }
+    : { game: true, record: true, analysis: false }
+}
+
 function scoresForGame(game: PrototypeGame, analyzed: boolean): (number | null)[] {
   if (!analyzed) return Array(game.positions.length).fill(null)
   return game.positions.map((_, index) => SCORE_PATTERN[index] ?? SCORE_PATTERN[SCORE_PATTERN.length - 1])
@@ -80,6 +91,8 @@ export function ModeSeparationPrototype({ initialVariant }: ModeSeparationProtot
   const [toast, setToast] = useState<string | null>(null)
 
   const current = game.positions[game.cursor]
+  const kifImportPlacement = prototypeKifImportPlacement(variant)
+  const replacingExistingGame = gameStarted || game.moves.length > 0
   const legalMoves = useMemo(
     () => (gameStarted ? generateMoves(clonePosition(current)) : []),
     [current, gameStarted],
@@ -187,8 +200,9 @@ export function ModeSeparationPrototype({ initialVariant }: ModeSeparationProtot
       setGameStarted(true)
       setSelected(-1)
       setAnalysisDone(false)
+      if (variant === 'A') setWorkspaceMode('analysis')
       setKifOpen(false)
-      announce(`5手の棋譜を読み込みました`)
+      announce(`${parsed.moves.length}手の棋譜を読み込み、${parsed.moves.length}手目を表示しました`)
     } catch (error) {
       announce(`読み込みに失敗しました: ${(error as Error).message}`)
     }
@@ -227,7 +241,7 @@ export function ModeSeparationPrototype({ initialVariant }: ModeSeparationProtot
       gameStarted={gameStarted}
       moveCount={game.moves.length}
       onBegin={beginGame}
-      onOpenKif={() => setKifOpen(true)}
+      onOpenKif={kifImportPlacement.game ? () => setKifOpen(true) : undefined}
     />
   )
   const recordPanel = (
@@ -237,7 +251,7 @@ export function ModeSeparationPrototype({ initialVariant }: ModeSeparationProtot
       marks={marks}
       scores={scores}
       onSeek={seek}
-      onOpenKif={() => setKifOpen(true)}
+      onOpenKif={kifImportPlacement.record ? () => setKifOpen(true) : undefined}
       onSave={() => announce('KIFの保存場所を確認しました')}
       onShare={copyShareUrl}
     />
@@ -252,6 +266,7 @@ export function ModeSeparationPrototype({ initialVariant }: ModeSeparationProtot
       bestMoveLabel={bestMoveLabel}
       onAnalyze={runAnalysis}
       onSeek={seek}
+      onOpenKif={kifImportPlacement.analysis ? () => setKifOpen(true) : undefined}
     />
   )
 
@@ -458,17 +473,35 @@ export function ModeSeparationPrototype({ initialVariant }: ModeSeparationProtot
             role="dialog"
             aria-modal="true"
             aria-labelledby="prototype-kif-title"
+            aria-describedby="prototype-kif-description"
             onKeyDown={(event) => {
               if (event.key === 'Escape') setKifOpen(false)
             }}
           >
-            <p className="prototype-kicker">共通テストデータ</p>
-            <h2 id="prototype-kif-title">5手のKIFを読み込む</h2>
-            <p className="hint">全案で同じ棋譜を使います。内容を確認して読み込んでください。</p>
-            <textarea autoFocus rows={11} value={kifText} onChange={(event) => setKifText(event.target.value)} />
+            <p className="prototype-kicker">外部棋譜の読み込み</p>
+            <h2 id="prototype-kif-title">
+              {replacingExistingGame ? '現在の対局を置き換えますか？' : '5手のKIFを読み込む'}
+            </h2>
+            <div id="prototype-kif-description">
+              <p className="hint">全案で同じ棋譜を使います。内容を確認して読み込んでください。</p>
+              {replacingExistingGame && (
+                <p className="prototype-kif-warning">
+                  {game.moves.length > 0 ? `現在の${game.moves.length}手の棋譜` : '開始した対局'}は外部KIFで置き換わります。キャンセルすると現在の状態を保持します。
+                </p>
+              )}
+            </div>
+            <textarea
+              autoFocus
+              aria-label="KIF形式の棋譜"
+              rows={11}
+              value={kifText}
+              onChange={(event) => setKifText(event.target.value)}
+            />
             <div className="row confirm-actions">
               <button type="button" onClick={() => setKifOpen(false)}>キャンセル</button>
-              <button type="button" className="primary" onClick={importSampleKif}>このKIFを読み込む</button>
+              <button type="button" className="primary" onClick={importSampleKif}>
+                {replacingExistingGame ? '置き換えて読み込む' : 'このKIFを読み込む'}
+              </button>
             </div>
           </section>
         </div>
@@ -503,7 +536,7 @@ function GamePanel({
   gameStarted: boolean
   moveCount: number
   onBegin: () => void
-  onOpenKif: () => void
+  onOpenKif?: () => void
 }) {
   return (
     <section className="card prototype-game-panel">
@@ -521,7 +554,7 @@ function GamePanel({
       </div>
       <div className="prototype-panel-actions">
         <button type="button" className="primary" onClick={onBegin}>新しい対局を始める</button>
-        <button type="button" onClick={onOpenKif}>KIFを読み込む</button>
+        {onOpenKif && <button type="button" onClick={onOpenKif}>KIFを読み込む</button>}
       </div>
     </section>
   )
@@ -542,7 +575,7 @@ function RecordPanel({
   marks: (string | null)[]
   scores: (number | null)[]
   onSeek: (cursor: number) => void
-  onOpenKif: () => void
+  onOpenKif?: () => void
   onSave: () => void
   onShare: () => void
 }) {
@@ -563,8 +596,8 @@ function RecordPanel({
         <button type="button" className="icon-button" aria-label="最終局面へ" onClick={() => onSeek(game.moves.length)} disabled={game.cursor === game.moves.length}>↦</button>
       </div>
       <MoveList texts={moveTexts} marks={marks} scores={scores} cursor={game.cursor} onSeek={onSeek} />
-      <div className="prototype-utility-grid">
-        <button type="button" onClick={onOpenKif}>KIF読込</button>
+      <div className={`prototype-utility-grid ${onOpenKif ? '' : 'prototype-utility-grid-without-import'}`}>
+        {onOpenKif && <button type="button" onClick={onOpenKif}>KIF読込</button>}
         <button type="button" disabled={game.moves.length === 0} onClick={onSave}>KIF保存</button>
         <button type="button" disabled={game.moves.length === 0} onClick={onShare}>URL共有</button>
       </div>
@@ -581,6 +614,7 @@ function AnalysisPanel({
   bestMoveLabel,
   onAnalyze,
   onSeek,
+  onOpenKif,
 }: {
   game: PrototypeGame
   moveTexts: string[]
@@ -590,6 +624,7 @@ function AnalysisPanel({
   bestMoveLabel: string | null
   onAnalyze: () => void
   onSeek: (cursor: number) => void
+  onOpenKif?: () => void
 }) {
   return (
     <section className="card prototype-analysis-panel">
@@ -600,6 +635,15 @@ function AnalysisPanel({
         </div>
         {analysisDone && <span className="prototype-complete">解析済み</span>}
       </div>
+      {onOpenKif && (
+        <div className="prototype-analysis-import">
+          <div>
+            <strong>外部棋譜を調べる</strong>
+            <span>KIFを読み込み、局面を選んで解析できます。</span>
+          </div>
+          <button type="button" onClick={onOpenKif}>KIFを読み込んで解析</button>
+        </div>
+      )}
       {!analysisDone ? (
         <div className="prototype-empty-analysis">
           <p>棋譜全体を評価し、現在局面の最善手を盤上に表示します。</p>
