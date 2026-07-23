@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { prototypeGameFromUsi, prototypeVariantFromSearch } from './ModeSeparationPrototype'
+import {
+  prototypeGameFromUsi,
+  prototypeKifImportPlacement,
+  prototypeVariantFromSearch,
+} from './ModeSeparationPrototype'
 
 describe('mode separation prototype routing', () => {
   it('keeps the production app as the default route', () => {
@@ -21,5 +25,28 @@ describe('shared prototype game fixture', () => {
     expect(game.positions).toHaveLength(6)
     expect(game.cursor).toBe(5)
     expect(game.positions[3].turn).toBe(1)
+  })
+})
+
+describe('A mode KIF import placement', () => {
+  it('keeps the import entry only in analysis for A', () => {
+    expect(prototypeKifImportPlacement('A')).toEqual({
+      game: false,
+      record: false,
+      analysis: true,
+    })
+  })
+
+  it('keeps the comparison behavior for B and D', () => {
+    expect(prototypeKifImportPlacement('B')).toEqual({
+      game: true,
+      record: true,
+      analysis: false,
+    })
+    expect(prototypeKifImportPlacement('D')).toEqual({
+      game: true,
+      record: true,
+      analysis: false,
+    })
   })
 })
