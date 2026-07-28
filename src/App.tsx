@@ -50,6 +50,8 @@ const PLAYER_OPTIONS: { value: string; label: string }[] = [
   { value: '4', label: 'AI 上級' },
 ]
 
+const ANALYSIS_TIME_MS_PER_POSITION = 1200
+
 export default function App() {
   const [game, setGame] = useState<GameState>(newGameState)
   const [players, setPlayers] = useState<Record<Player, PlayerKind>>({ 0: 'human', 1: 2 })
@@ -265,7 +267,7 @@ export default function App() {
       bestMoves: Array(sfens.length).fill(null),
       running: true,
     })
-    w.postMessage({ type: 'analyze', id, sfens, timeMsPerPosition: 800 })
+    w.postMessage({ type: 'analyze', id, sfens, timeMsPerPosition: ANALYSIS_TIME_MS_PER_POSITION })
   }
 
   useEffect(() => () => cancelAnalysis(), [cancelAnalysis])
